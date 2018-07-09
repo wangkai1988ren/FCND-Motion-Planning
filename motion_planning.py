@@ -129,7 +129,6 @@ class MotionPlanning(Drone):
         lon0 = 0.0
         with open('colliders.csv','r') as f:
             lines=f.readlines()
-            #dd = np.loadtxt(lines[0], usecols=(1,3), delimiter=', ', dtype='float')
             head = lines[0]
             half_h = head.split(',')
             lat0 = float(half_h[0].strip().split(' ')[1])
@@ -140,14 +139,10 @@ class MotionPlanning(Drone):
         self.set_home_position(lon0,lat0,0)
 
         # TODO: retrieve current global position
-        my_latitude = self._latitude
-        my_longitude = self._longitude
-        my_altitude = self._altitude
-        my_global_position = (self._longitude, self._latitude, self._altitude)
+        my_global_position = self.global_position
 
         # TODO: convert to current local position using global_to_local()
-        self.local_postion =  global_to_local(my_global_position, self.global_home)
-
+        my_local_position =  global_to_local(my_global_position, self.global_home)
 
         print('global home {0}, position {1}, local position {2}'.format(self.global_home, self.global_position,
                                                                          self.local_position))
@@ -160,7 +155,7 @@ class MotionPlanning(Drone):
         # Define starting point on the grid (this is just grid center)
 
         # TODO: convert start position to current position rather than map center
-        grid_start = (int(self.local_postion[0]-north_offset), int(self.local_postion[1]-east_offset))
+        grid_start = (int(my_local_position[0]-north_offset), int(my_local_position[1]-east_offset))
         # Set goal as some arbitrary position on the grid
         # TODO: adapt to set goal as latitude / longitude position and convert
         global_goal = (-122.397450-0.0017, 37.792480+0.0038, 0)

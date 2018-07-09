@@ -1,7 +1,7 @@
 # FCND - 3D Motion Planning
 ![Quad Image](./misc/enroute.png)
 
-# content
+# Content
 1. Load the 2.5D map in the colliders.csv file describing the environment.
 2. Discretize the environment into a grid or graph representation.
 3. Define the start and goal locations.
@@ -14,69 +14,48 @@
 1. Download the Motion-Planning [simulator](https://github.com/udacity/FCND-Simulator-Releases/releases).
 2. Set up [Python environment](https://github.com/udacity/FCND-Term1-Starter-Kit)
 3. Clone this [Repository](https://github.com/udacity/FCND-Motion-Planning)
-4. Execute ```sh Motion_plaing.py ```
+4. Execute ```Motion_planning.py ```
 
-## [Rubric](https://review.udacity.com/#!/rubrics/1534/view) Points
-### Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
+You're reading it! Below I describe the details of procedures in my project.
 
----
-### Writeup / README
+### Starter Code
 
-#### 1. Provide a Writeup / README that includes all the rubric points and how you addressed each one.  You can submit your writeup as markdown or pdf.  
+The project start in `Motion_planning.py` and `planning_utils.py` is a package containing important algorithms.  `Motion_planning.py` includes
+map normalization method，states transition method, waypoints production methond and communication method. `planning_utils.py` includes the A star path searching method,collinearity check method, points pruning method.
 
-You're reading it! Below I describe how I addressed each rubric point and where in my code each point is handled.
+And here's a lovely image of my results
+![Top Down View](./misc/mp1.png)
 
-### Explain the Starter Code
-
-#### 1. Explain the functionality of what's provided in `motion_planning.py` and `planning_utils.py`
-These scripts contain a basic planning implementation that includes...
-
-And here's a lovely image of my results (ok this image has nothing to do with it, but it's a nice example of how to include images in your writeup!)
-![Top Down View](./misc/high_up.png)
-
-Here's | A | Snappy | Table
---- | --- | --- | ---
-1 | `highlight` | **bold** | 7.41
-2 | a | b | c
-3 | *italic* | text | 403
-4 | 2 | 3 | abcd
-
-### Implementing Your Path Planning Algorithm
+### My Path Planning Algorithm
 
 #### 1. Set your global home position
-Here students should read the first line of the csv file, extract lat0 and lon0 as floating point values and use the self.set_home_position() method to set global home. Explain briefly how you accomplished this in your code.
 
-
-And here is a lovely picture of our downtown San Francisco environment from above!
-![Map of SF](./misc/map.png)
+Here I read the first line of the csv file. In Line 133 to Line 136 I use the split() method to divide the first line into fragments, then
+extract the numeric string `37.792480` of lat0 and `-122.397450` of lon0 as floating point values and use the self.set_home_position() method to set global home.
 
 #### 2. Set your current local position
-Here as long as you successfully determine your local position relative to global home you'll be all set. Explain briefly how you accomplished this in your code.
 
-
-Meanwhile, here's a picture of me flying through the trees!
-![Forest Flying](./misc/in_the_trees.png)
+The drone need to be able to takeoff from anywhere. I obtain the drone's current position in geodetic coordinates from self.global_position, and the global home position have being setted in last step. then I use global_to_local() to convert the current global position to local position.
 
 #### 3. Set grid start position from local position
-This is another step in adding flexibility to the start location. As long as it works you're good to go!
+
+To convert start position to current position rather than map center，I use my_local_position minus north/east_offset to get the coordinate in grid map,and set it to value grid_start.
 
 #### 4. Set grid goal position from geodetic coords
-This step is to add flexibility to the desired goal location. Should be able to choose any (lat, lon) within the map and have it rendered to a goal location on the grid.
+
+To adapt to set goal as latitude / longitude position, I use function global_to_local to convert global_goal to local_goal. Just like the start position,I use local_goal minus north/east_offset to get the coordinate in grid map,and set it to value grid_goal.
 
 #### 5. Modify A* to include diagonal motion (or replace A* altogether)
-Minimal requirement here is to modify the code in planning_utils() to update the A* implementation to include diagonal motions on the grid that have a cost of sqrt(2), but more creative solutions are welcome. Explain the code you used to accomplish this step.
+
+Modifying A* to include diagonal motion include 2 step,
+step 1: In the class Action I add the  NORTHWEST, NORTHEAST, SOUTHWEST and SOUTHEAST which has a cost of sqrt(2) .
+step 2: In the function valid_actions I add the rules of removing diagonal motion, those are the motion stepping out of the map or crash the obstacles in map.
 
 #### 6. Cull waypoints
+
 For this step you can use a collinearity test or ray tracing method like Bresenham. The idea is simply to prune your path of unnecessary waypoints. Explain the code you used to accomplish this step.
-
-
+I have two method to cull different kinds of waypoints. The first is collinearity test in function collinearity_check() which test every three closest points. If the three points are collinear, then the middle point is removed. The second is Bresenham cross test in function cross() and pick_uncrossed(). I use random dichotomy to test whether the straight line of two points crash any obstacle, if not the points between the two will be all removed.
 
 ### Execute the flight
 #### 1. Does it work?
 It works!
-
-### Double check that you've met specifications for each of the [rubric](https://review.udacity.com/#!/rubrics/1534/view) points.
-
-# Extra Challenges: Real World Planning
-
-For an extra challenge, consider implementing some of the techniques described in the "Real World Planning" lesson. You could try implementing a vehicle model to take dynamic constraints into account, or implement a replanning method to invoke if you get off course or encounter unexpected obstacles.
